@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"github.com/joho/godotenv"
 	client "github.com/zinclabs/sdk-go-zincsearch"
 	"log"
@@ -14,57 +13,33 @@ import (
 
 func main() {
 	mailDirPath := os.Getenv("MAIL_DIR_PATH")
-	envErr := godotenv.Load(".env")
-	if envErr != nil {
-		fmt.Printf("could not load .env file ")
-		os.Exit(1)
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal(err)
 	}
 
 	dirEntries, err := os.ReadDir(mailDirPath)
-
 	if err != nil {
-		log.Print("error:", err)
+		log.Fatal("cannot open maildirectory", err)
 	}
-	var allInboxFilesAllUsers [][]map[string]interface{}
-
-	for _, entryUser := range dirEntries {
-		inboxUser, err := os.ReadDir(filepath.Join(mailDirPath, entryUser.Name(), "inbox"))
+	log.Print("start reading inbox ")
+	var allEmails [][]map[string]interface{}
+	for _, userInbox := range dirEntries {
+		inboxEntries, err := os.ReadDir(filepath.Join(mailDirPath, userInbox.Name(), "inbox"))
 		if os.IsNotExist(err) {
-			log.Print("user %s  , err:%s", entryUser.Name(), err)
+			log.Printf("no inbox for user %s", userInbox.Name())
 			continue
 		}
 
-		var allInboxFilesUser []map[string]interface{}
-		for _, inboxFiles := range inboxUser {
-			files, err := os.Open(filepath.Join(mailDirPath, entryUser.Name(), "inbox", inboxFiles.Name()))
+		var emails []map[string]interface{}
+		for _, inboxFile := range inboxEntries {
+			email, err := extractEmail(mailDirPath, userInbox, inboxFile)
 			if err != nil {
 				log.Print(err)
 			}
-			inboxFileUser := make(map[string]interface{})
-			scan := bufio.NewScanner(files)
-
-			for scan.Scan() {
-				line := scan.Text()
-
-				from, foundFrom := extractValue(line, "From:")
-				if foundFrom {
-					inboxFileUser["From"] = from
-					continue
-				}
-				to, foundTo := extractValue(line, "To:")
-				if foundTo {
-					inboxFileUser["to"] = to
-					continue
-				}
-				subject, foundSub := extractValue(line, "Subject:")
-				if foundSub {
-					inboxFileUser["subject"] = subject
-					break
-				}
-			}
-			allInboxFilesUser = append(allInboxFilesUser, inboxFileUser)
+			emails = append(emails, email)
 		}
-		allInboxFilesAllUsers = append(allInboxFilesAllUsers, allInboxFilesUser)
+
+		allEmails = append(allEmails, emails)
 	}
 
 	ctx := context.WithValue(context.Background(), client.ContextBasicAuth, client.BasicAuth{
@@ -79,21 +54,53 @@ func main() {
 		},
 	}
 	apiClient := client.NewAPIClient(configuration)
-	for _, allEmailsUser := range allInboxFilesAllUsers {
+	log.Print("starting to index")
+	for _, emails := range allEmails {
 		query := client.NewMetaJSONIngest()
 		query.SetIndex("inbox")
-		query.SetRecords(allEmailsUser)
+		query.SetRecords(emails)
 		_, _, err := apiClient.Document.Bulkv2(ctx).Query(*query).Execute()
 		if err != nil {
 			log.Fatal(err)
 		}
-
 	}
-
+	log.Printf("index done for emails of %d inboxes", len(allEmails))
 }
 
 func extractValue(line, word string) (string, bool) {
 	_, after, found := strings.Cut(line, word)
 	return after, found
 
+}
+func extractEmail(mailDirPath string, userInbox os.DirEntry, inboxFile os.DirEntry) (map[string]interface{}, error) {
+	file, err := os.Open(filepath.Join(mailDirPath, userInbox.Name(), "inbox", inboxFile.Name()))
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	email := make(map[string]interface{})
+	email["Username"] = userInbox.Name()
+
+	scan := bufio.NewScanner(file)
+	for scan.Scan() {
+		line := scan.Text()
+
+		from, foundFrom := extractValue(line, "From:")
+		if foundFrom {
+			email["From"] = from
+			continue
+		}
+		to, foundTo := extractValue(line, "To:")
+		if foundTo {
+			email["to"] = to
+			continue
+		}
+		subject, foundSub := extractValue(line, "Subject:")
+		if foundSub {
+			email["subject"] = subject
+			break
+		}
+	}
+	return email, nil
 }
