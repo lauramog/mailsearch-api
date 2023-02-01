@@ -1,7 +1,7 @@
 # Backend: email searching engine 
 
 tool to process (indexer) the Enron Email Dataset (download it [here](http://www.cs.cmu.edu/~enron/enron_mail_20110402.tgz)) 
-and index it in [zincsearch](https://zincsearch.com/) and a Web server (api) to expose the api.  
+furthermore index it in [zincsearch](https://zincsearch.com/) and a Web server (api) to expose the api.  
 
 ## Install 
 Ensure the following is installed:
