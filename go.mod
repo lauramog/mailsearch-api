@@ -10,4 +10,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20210323180902-22b0adad7558 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
+	github.com/go-chi/chi/v5 v5.0.8 // indirect
+
 )
