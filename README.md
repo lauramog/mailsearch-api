@@ -1,12 +1,13 @@
 # Backend: email searching engine 
 
-tool to process the Enron Email Dataset and index it in [zincsearch](https://zincsearch.com/).
+tool to process the Enron Email Dataset (download it [here](http://www.cs.cmu.edu/~enron/enron_mail_20110402.tgz)) 
+and index it in [zincsearch](https://zincsearch.com/).
 
 ## Install 
 Ensure the following is installed:
 
 * [Go is installed locally](https://go.dev/doc/install) 
-*  [docker](https://www.docker.com/get-started/)
+* [docker](https://www.docker.com/get-started/)
 
 Then clone the repo locally: `https://github.com/lauramog/mailsearch-api.git`
 
@@ -40,5 +41,4 @@ start the server
 ```
 
 *search in ZincSearch UI*
-
 http://localhost:4080/
