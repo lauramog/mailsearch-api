@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+
 	mailDirPath := os.Getenv("MAIL_DIR_PATH")
 	if err := godotenv.Load(".env"); err != nil {
 		log.Fatal(err)
