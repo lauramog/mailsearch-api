@@ -24,9 +24,11 @@ docker run -p 4080:4080 -e ZINC_FIRST_ADMIN_USER=admin -e ZINC_FIRST_ADMIN_PASSW
 ```
 
 index data in ZincSearch
-
+```bash
 ├── cmd
 │   ├──indexer
+```
+
 ```shell
 MAIL_DIR_PATH="/path/to/root/folder/of/data" go run main.go
 ```
