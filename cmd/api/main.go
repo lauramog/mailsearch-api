@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 	client "github.com/zinclabs/sdk-go-zincsearch"
@@ -13,15 +14,19 @@ import (
 )
 
 func main() {
+
+	addr := flag.String("addr", ":8081", "HTTP network address")
+	flag.Parse()
 	if err := godotenv.Load(".env"); err != nil {
 		log.Fatal(err)
 	}
+
 	router := chi.NewRouter()
 	router.Get("/search", searchHandler)
 
-	err := http.ListenAndServe(":8081", router)
+	err := http.ListenAndServe(*addr, router)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal("can not start the server", err)
 	}
 }
 
