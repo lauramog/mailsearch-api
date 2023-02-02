@@ -19,32 +19,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	dirEntries, err := os.ReadDir(mailDirPath)
-	if err != nil {
-		log.Fatal("cannot open maildirectory", err)
-	}
 	log.Print("start reading inbox ")
-	var allEmails [][]map[string]interface{}
-	for _, userInbox := range dirEntries {
-		inboxEntries, err := os.ReadDir(filepath.Join(mailDirPath, userInbox.Name(), "inbox"))
-		if os.IsNotExist(err) {
-			log.Printf("no inbox for user %s", userInbox.Name())
-			continue
-		}
 
-		var emails []map[string]interface{}
-		for _, inboxFile := range inboxEntries {
-			if inboxFile.IsDir() {
-				continue
-			}
-			email, err := extractEmail(mailDirPath, userInbox, inboxFile)
-			if err != nil {
-				log.Print(err)
-			}
-			emails = append(emails, email)
-		}
-
-		allEmails = append(allEmails, emails)
+	allEmails, err := parseEmails(mailDirPath)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	ctx := context.WithValue(context.Background(), client.ContextBasicAuth, client.BasicAuth{
@@ -72,11 +51,39 @@ func main() {
 	log.Printf("index done for emails of %d inboxes", len(allEmails))
 }
 
-func extractValue(line, word string) (string, bool) {
-	_, after, found := strings.Cut(line, word)
-	return after, found
+func parseEmails(mailDirPath string) ([][]map[string]interface{}, error) {
+	var allEmails [][]map[string]interface{}
 
+	dirEntries, err := os.ReadDir(mailDirPath)
+	if err != nil {
+		return allEmails, err
+	}
+
+	for _, userInbox := range dirEntries {
+		inboxEntries, err := os.ReadDir(filepath.Join(mailDirPath, userInbox.Name(), "inbox"))
+		if os.IsNotExist(err) {
+			log.Printf("no inbox for user %s", userInbox.Name())
+			continue
+		}
+
+		var emails []map[string]interface{}
+		for _, inboxFile := range inboxEntries {
+			if inboxFile.IsDir() {
+				continue
+			}
+			email, err := extractEmail(mailDirPath, userInbox, inboxFile)
+			if err != nil {
+				log.Printf("cannot parse email from inbox %s: %s", userInbox.Name(), err)
+			}
+			emails = append(emails, email)
+		}
+
+		allEmails = append(allEmails, emails)
+	}
+
+	return allEmails, nil
 }
+
 func extractEmail(mailDirPath string, userInbox os.DirEntry, inboxFile os.DirEntry) (map[string]interface{}, error) {
 	file, err := os.ReadFile(filepath.Join(mailDirPath, userInbox.Name(), "inbox", inboxFile.Name()))
 	if err != nil {
@@ -100,10 +107,10 @@ func extractEmail(mailDirPath string, userInbox os.DirEntry, inboxFile os.DirEnt
 	email["Subject"] = subject
 
 	body, err := io.ReadAll(m.Body)
-	email["Message"] = string(body)
 	if err != nil {
 		return nil, err
 	}
+	email["Message"] = string(body)
 
 	return email, nil
 }
