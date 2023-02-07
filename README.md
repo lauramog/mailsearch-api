@@ -1,6 +1,6 @@
 # Backend: email searching engine 
 
-tool(indexer)  to process  the Enron Email Dataset (download it [here](http://www.cs.cmu.edu/~enron/enron_mail_20110402.tgz)),
+Tool(indexer)  to process  the Enron Email Dataset (download it [here](http://www.cs.cmu.edu/~enron/enron_mail_20110402.tgz)),
 indexing it in [zincsearch](https://zincsearch.com/), this tools parses the emails in the inbox directory, extracting the fields: to, from, 
 subject and the body of the email. In the directory api you find a web server to expose the API.   
 
@@ -31,7 +31,7 @@ Index data in ZincSearch
 MAIL_DIR_PATH="/path/to/root/folder/of/data" go run main.go
 ```
 
-*search in ZincSearch UI http://localhost:4080/* 
+*Search in ZincSearch UI http://localhost:4080/* 
 
 
 Start the server 
@@ -42,10 +42,10 @@ Start the server
   go run main.go
 ```
 
-request to the server 
+Request to the server 
 
 ```shell
 curl "http://localhost:port/search?term=enter&a&word/"
 ```
 
-use the user interface provided [here](https://github.com/lauramog/mailsearch-ui)
+Use the user interface provided [here](https://github.com/lauramog/mailsearch-ui)
