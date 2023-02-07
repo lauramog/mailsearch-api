@@ -1,21 +1,19 @@
 # Backend: email searching engine 
 
-tool to process (indexer) the Enron Email Dataset (download it [here](http://www.cs.cmu.edu/~enron/enron_mail_20110402.tgz)) 
-furthermore index it in [zincsearch](https://zincsearch.com/) and a Web server (api) to expose the api.  
+tool(indexer)  to process  the Enron Email Dataset (download it [here](http://www.cs.cmu.edu/~enron/enron_mail_20110402.tgz)),
+indexing it in [zincsearch](https://zincsearch.com/), this tools parses the emails in the inbox directory, extracting the fields: to, from, 
+subject and the body of the email. In the directory api you find a web server to expose the API.   
 
-## Install 
+## :wrench: Installation 
 Ensure the following is installed:
 
 * [Go is installed locally](https://go.dev/doc/install) 
 * [docker](https://www.docker.com/get-started/)
 
-Then clone the repo locally: `https://github.com/lauramog/mailsearch-api.git`
+Then clone the repo locally: `https://github.com/lauramog/mailsearch-api.git`, you can find a User interface for this 
+API [here](https://github.com/lauramog/mailsearch-ui)
 
-## Test
 
-```shell
-go test ./...
-```
 
 ## Run 
 
@@ -44,4 +42,10 @@ Start the server
   go run main.go
 ```
 
+request to the server 
 
+```shell
+curl "http://localhost:port/search?term=enter&a&word/"
+```
+
+use the user interface provided [here](https://github.com/lauramog/mailsearch-ui)
