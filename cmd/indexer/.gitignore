@@ -1,1 +1,4 @@
 .env
+cpu.out
+mem.out
+indexer.test

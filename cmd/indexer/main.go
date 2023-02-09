@@ -2,22 +2,33 @@ package main
 
 import (
 	"context"
+	"flag"
 	"github.com/joho/godotenv"
 	client "github.com/zinclabs/sdk-go-zincsearch"
 	"io"
 	"log"
-	"net/http"
-	_ "net/http/pprof"
 	"net/mail"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 	"strings"
 )
 
+var profile = flag.String("profile", "", "profile the indexer")
+
 func main() {
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
+	flag.Parse()
+	if *profile != "" {
+		f, err := os.Create(*profile)
+		if err != nil {
+			log.Fatal("could not create CPU profile: ", err)
+		}
+		defer f.Close()
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("could not start CPU profile: ", err)
+		}
+		defer pprof.StopCPUProfile()
+	}
 
 	mailDirPath := os.Getenv("MAIL_DIR_PATH")
 	if err := godotenv.Load(".env"); err != nil {
