@@ -6,6 +6,8 @@ import (
 	client "github.com/zinclabs/sdk-go-zincsearch"
 	"io"
 	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"net/mail"
 	"os"
 	"path/filepath"
@@ -13,6 +15,9 @@ import (
 )
 
 func main() {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 
 	mailDirPath := os.Getenv("MAIL_DIR_PATH")
 	if err := godotenv.Load(".env"); err != nil {
@@ -49,6 +54,7 @@ func main() {
 		}
 	}
 	log.Printf("index done for emails of %d inboxes", len(allEmails))
+
 }
 
 func parseEmails(mailDirPath string) ([][]map[string]interface{}, error) {
